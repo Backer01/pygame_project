@@ -6,6 +6,7 @@ from settings import *
 from map import mini_map
 from collections import deque
 import sys
+import datetime
 import pygame
 
 
@@ -400,6 +401,17 @@ class Drawing:
         while self.running:
 
             self.screen.fill(pygame.Color('black'))
+            self.background(self.player.angle)  # Отрисовка земли и неба
+            walls, wall_shot = ray_casting_textures(self.player, self.textures)
+            self.walls(walls + [obj.object_locate(self.player) for obj in self.sprites.list_of_objects])
+            self.minimap(self.player)  # Отрисовка мини-карты
+            self.coords(self.player)  # Отрисовка координта игрока
+            self.fps(clock)  # Отрисовка фпс
+            self.shot(self.player, [wall_shot, self.sprites.sprite_shot])  # Отрисовка взрыва от попадания
+            self.scope()  # Отрисовка прицела
+
+            self.interaction.interaction_objects()  # Взаимодействие с npc
+            self.interaction.npc_action()  # Передвижение npc
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -432,18 +444,8 @@ class Drawing:
                         if el.type == 'npc':
                             el.is_dead = True
                     self.interaction.check_win()
-
-            self.background(self.player.angle)  # Отрисовка земли и неба
-            walls, wall_shot = ray_casting_textures(self.player, self.textures)
-            self.walls(walls + [obj.object_locate(self.player) for obj in self.sprites.list_of_objects])
-            self.minimap(self.player)  # Отрисовка мини-карты
-            self.coords(self.player)  # Отрисовка координта игрока
-            self.fps(clock)  # Отрисовка фпс
-            self.shot(self.player, [wall_shot, self.sprites.sprite_shot])  # Отрисовка взрыва от попадания
-            self.scope()  # Отрисовка прицела
-
-            self.interaction.interaction_objects()  # Взаимодействие с npc
-            self.interaction.npc_action()  # Передвижение npc
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_F2:  # Создание скриншота
+                    pygame.image.save(self.screen, f'screenshots/{str(datetime.datetime.now()).replace(":", ".")}.png')
 
             self.player.move()
             if mouse_control:
